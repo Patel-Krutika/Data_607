@@ -1,0 +1,40 @@
+---
+title: "Data_607_Week1"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## The following article examines how the public gets their weather forecast. The study conducts a survey through Survey Monkey Auidence of 928 respondents over a span of 5 days. The target questions being: How do you check the weather? And, do you check a weather report everyday?
+
+## Article: https://fivethirtyeight.com/features/weather-forecast-news-app-habits/
+
+
+
+```{r data}
+data = read.csv("https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/weather-check.csv")
+```
+
+
+```{r data_view}
+head(data)
+```
+
+
+```{r data_trans}
+## The data frame created from the original data set omits some columns not directly relevant to the question being answered.
+## Original Columns
+names(data)
+
+df = data.frame(Daily = data$Do.you.typically.check.a.daily.weather.report., Source = data$How.do.you.typically.check.the.weather., Specific_Source = data$A.specific.website.or.app..please.provide.the.answer., Check_On_Apple_Watch = data$If.you.had.a.smartwatch..like.the.soon.to.be.released.Apple.Watch...how.likely.or.unlikely.would.you.be.to.check.the.weather.on.that.device., Age = data$Age, Gender = data$What.is.your.gender.)
+
+## Subset Columns (Renamed)
+names(df)
+## The following columns were not added to the data frame as they were not directly relevant to the questions being answered, and would not aid in any direct analysis.
+
+## "RespondentID", "If.you.had.a.smartwatch..like.the.soon.to.be.released.Apple.Watch...how.likely.or.unlikely.would.you.be.to.check.the.weather.on.that.device.", "How.much.total.combined.money.did.all.members.of.your.HOUSEHOLD.earn.last.year.", "US.Region"
+head(df)
+```
