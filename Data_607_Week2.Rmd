@@ -1,0 +1,99 @@
+---
+title: "Data_607_Week2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This assignment uses the following additional software and packages:
+MySQL Server
+MySQL Workbench
+RMySQL
+plyr
+
+In order to create the tables create the movie_ratings data base and set it as the default schema (sql command for this is commented out). Run the rest movie_ratings.sql script to create and populate the tables (https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/movie_ratings.sql).
+Create the connection to MySQL server with the appropriate hostname and credentials.
+
+The csv file representing the final data frame can be found at (https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/MOVIE_RATINGS.csv)
+
+```{r Datbase Connection}
+library("RMySQL")
+mydb = dbConnect(MySQL(), user='user', password='pass', dbname='movie_ratings', host='localhost')
+```
+
+The movie_ratings database has two two tables: movies and ratings. The movies table stores each movie with a unique id, and the ratings table holds each rating for a movie by a participant as an individual row (There will be 6 rows with the same participant id, each representing the participant's rating for one movie).
+
+```{r DB Tables}
+dbListTables(mydb)
+```
+
+The following code queries the names of all the movie names to later us as the column names for the data frame.
+
+```{r Movies}
+library("plyr")
+rs = dbSendQuery(mydb, "select  * from MOVIES")
+data = fetch(rs, n=-1)
+
+m_count <- length(data$M_ID)
+cols <- data$M_NAME
+
+cols
+```
+
+The following code queries all the ratings for each movie. The 6 results are added to the final data frame, and the column names set the the movie names extracted above.
+
+```{r Ratings}
+str <- paste("select rating from ratings where m_id =", toString(1))
+rs = dbSendQuery(mydb, str)
+m1 = fetch(rs, n=-1)
+
+str <- paste("select rating from ratings where m_id =", toString(2))
+rs = dbSendQuery(mydb, str)
+m2 = fetch(rs, n=-1)
+
+str <- paste("select rating from ratings where m_id =", toString(3))
+rs = dbSendQuery(mydb, str)
+m3 = fetch(rs, n=-1)
+
+str <- paste("select rating from ratings where m_id =", toString(4))
+rs = dbSendQuery(mydb, str)
+m4 = fetch(rs, n=-1)
+
+str <- paste("select rating from ratings where m_id =", toString(5))
+rs = dbSendQuery(mydb, str)
+m5 = fetch(rs, n=-1)
+
+str <- paste("select rating from ratings where m_id =", toString(6))
+rs = dbSendQuery(mydb, str)
+m6 = fetch(rs, n=-1)
+
+
+dataframe <- data.frame(m1,m2,m3,m4,m5,m6)
+
+colnames(dataframe) <- cols
+
+dataframe
+```
+In order to account for missing values for each movie, I utilized the na.rm function to omit them from the calculations. The data set is really samll for any significant information, thus it would not be reasonable to just omit all of a participant's reviews simply because one is missing.
+
+```{r Summary}
+
+
+summary(dataframe, na.rm = TRUE)
+```
+Using the csv file to create the data frame.
+
+```{r csv}
+df_csv = data.frame(read.csv("https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/MOVIE_RATINGS.csv"))
+df_csv
+
+summary(df_csv)
+```
+
+```{r Data Visulization}
+colMeans(dataframe, na.rm=TRUE)
+barplot(colMeans(dataframe, na.rm=TRUE), las=3, space = .5, col= c("Grey", "Yellow", "Red", "Lightblue", "Brown", "Green"))
+```
+
