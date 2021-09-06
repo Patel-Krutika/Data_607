@@ -13,7 +13,7 @@ MySQL Workbench
 RMySQL
 plyr
 
-In order to create the tables create the movie_ratings data base and set it as the default schema (sql command for this is commented out). Run the rest movie_ratings.sql script to create and populate the tables (https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/movie_ratings.sql).
+In order to create the tables create the movie_ratings data base and set it as the default schema (sql command for this is commented out). Run the rest of the movie_ratings.sql script to create and populate the tables (https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/movie_ratings.sql).
 Create the connection to MySQL server with the appropriate hostname and credentials.
 
 The csv file representing the final data frame can be found at (https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/MOVIE_RATINGS.csv)
