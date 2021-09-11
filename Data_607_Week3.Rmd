@@ -1,0 +1,105 @@
+---
+title: "Data_607_Week3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# #1
+Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+Load .csv file
+```{r Load Data}
+
+df = data.frame(read.csv("https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv"))
+head(df)
+```
+
+Search for College Majors containing "DATA" or "STATISTICS"
+
+```{r Find Matches}
+lst <- df$Major[grepl("DATA",df$Major,fixed = TRUE) | grepl("STATISTICS",df$Major,fixed = TRUE) ]
+lst
+```
+
+# #2
+Write code that transforms the data below:
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"
+
+Into a format like this:
+
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+```{r Data Transformation}
+
+library(tidyverse)
+library(dplyr)
+
+data <- '[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"'
+
+data <- str_extract_all(data, '([a-zA-Z ]+[a-zA-Z])')
+data <- unlist(data)
+data
+```
+
+# #3
+
+Write in words, what the expressions will match.
+
+ "(.)\\\\1\\\\1"
+The expression will match any character that appears three times in a row. (i.e fff)
+
+
+ "(.)(.)\\\\2\\\\1"
+The expression will match the first character and the second character and then the second character followed by the first character. (i.e. 0110)
+
+
+ "(..)\\\\1"
+The expression will match the a pair of characters that repeat immediately (i.e oooo, ieie). 
+
+
+ "(.).\\\\1.\\\\1"
+The expression will match a character that appears three times will a different character between each repeat. (i.e. c%c$c)
+
+
+ "(.)(.)(.).*\\\\3\\\\2\\\\1"
+The expression will match the 1st, 2nd, and 3rd characters and then anything, followed by the 3rd, 2nd, and 1st characters. (i.e. abccba, abc0000cba)
+
+# #4
+
+Construct regular expressions to match words that:
+
+Start and end with the same character.
+Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)
+Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.)
+
+```{r}
+
+library(tidyverse)
+
+f <- c("sings", "church", "eleven")
+
+str_view(f, "^(.).*\\1$", match = TRUE)
+
+
+str_view(f, "(..).*\\1", match = TRUE)
+
+
+str_view(f,"(.).*\\1.*\\1", match = TRUE)
+```
+
