@@ -1,0 +1,143 @@
+---
+title: "Project_1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(dplyr)
+df <- data.frame(read.delim("tournamentinfo.txt"))
+head(df,1)
+```
+
+#cols <- str_extract_all(cols, '([a-zA-Z0-9\\.]+[a-zA-Z0-9])')
+```{r}
+text <- head(df,41)
+text <- toString(text)
+
+text <- toString(df)
+```
+
+#Done
+
+```{r Name}
+name <- str_extract_all(text, '([A-Z]+ ){2}([A-Z])*+')
+name <- unlist(name)
+name <- name[-1]
+name <- str_trim(name)
+name
+length(name)
+```
+# Done
+```{r State}
+state <- str_extract_all(text, "([A-Z][A-Z]) \\|")
+state <- unlist(state)
+state <- strtrim(state, 2)
+state
+length(state)
+```
+
+#Done
+
+```{r Total Points}
+tot_pts <- str_extract_all(text, '[0-9][\\.][0-9]')
+tot_pts <- unlist(tot_pts)
+tot_pts <- as.double(tot_pts)
+tot_pts
+length(tot_pts)
+```
+#Done
+```{r Pre-Rating}
+pr <- str_extract_all(text, ': *[0-9]+...-')
+pr <- unlist(pr)
+pr <- toString(pr)
+pr <- str_extract_all(pr, ' [0-9]+')
+pr <- unlist(pr)
+pr <- as.integer(pr)
+pr
+length(pr)
+```
+
+```{r Num}
+num <- str_extract_all(text, '   .[0-9] ')
+num <- unlist(num)
+num <- as.integer(num)
+num
+length(num)
+```
+
+
+```{r Opponents}
+
+x <- str_extract_all(text, '\\..{3}\\|[A-Z]....\\|[A-Z]....\\|[A-Z]....\\|[A-Z]....\\|[A-Z]....\\|[A-Z]....\\|[A-Z]....\\|')
+x <- unlist(x)
+
+y <- data.frame(matrix(ncol = 7, nrow = 0))
+c <- c("R1", "R2", "R3", "R4", "R5", "R6", "R7")
+colnames(y) <- c
+cols <- colnames(y)
+
+for (i in x)
+{
+  r <- str_extract_all(i, '  ..')
+  r <- unlist(r)
+  r <- r[-1]
+  r <- as.integer(r)
+  
+  y[nrow(y)+1,] <- r
+}
+
+y
+
+```
+
+```{r opponents df}
+pre_rating <- data.frame(Num = num, Rating = pr)
+opponents <- data.frame(R1 = y$R1, R2 = y$R2, R3 = y$R3, R4 = y$R4, R5 = y$R5, R6 = y$R6, R7 = y$R7)
+
+avg <- c()
+for (i in num)
+{
+  c <- 0
+  sum <- 0
+  for (val in opponents[i,])
+  {
+  
+    if(is.na(val) == FALSE)
+    {
+      sum <- sum + pre_rating$Rating[pre_rating$Num == val]
+      c <- c + 1
+    }
+  
+  }
+   avg[i] <- as.integer(sum/c)
+   
+}
+avg <- data.frame(avg)
+```
+
+# dataf %>% add_column(new_col = NA)
+
+```{r Info}
+info <- data.frame(Name = name, State = state, Total_Pts = tot_pts, Pre_Rt = pr, R1 = y$R1, R2 = y$R2, R3 = y$R3, R4 = y$R4, R5 = y$R5, R6 = y$R6, R7 = y$R7)
+info
+```
+
+
+```{r Final}
+player_info <- data.frame(Name = name, State = state, Total_Pts = tot_pts, Pre_Rating = pr, Avg_Op = avg)
+
+colnames(player_info) <- c("Name", "State", "Total_Pts", "Pre-Rating", "Avg_Opp")
+
+player_info
+```
+```{r csv}
+
+write.csv(player_info,"Player_Info.csv", row.names = FALSE)
+
+```
+
