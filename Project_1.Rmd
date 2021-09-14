@@ -11,46 +11,38 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(dplyr)
 df <- data.frame(read.delim("tournamentinfo.txt"))
-head(df,1)
+head(df)
 ```
-
-#cols <- str_extract_all(cols, '([a-zA-Z0-9\\.]+[a-zA-Z0-9])')
 ```{r}
-text <- head(df,41)
-text <- toString(text)
-
 text <- toString(df)
 ```
 
-#Done
 
 ```{r Name}
 name <- str_extract_all(text, '([A-Z]+ ){2}([A-Z])*+')
 name <- unlist(name)
 name <- name[-1]
 name <- str_trim(name)
-name
+head(name)
 length(name)
 ```
-# Done
+
 ```{r State}
 state <- str_extract_all(text, "([A-Z][A-Z]) \\|")
 state <- unlist(state)
 state <- strtrim(state, 2)
-state
+head(state)
 length(state)
 ```
-
-#Done
 
 ```{r Total Points}
 tot_pts <- str_extract_all(text, '[0-9][\\.][0-9]')
 tot_pts <- unlist(tot_pts)
 tot_pts <- as.double(tot_pts)
-tot_pts
+head(tot_pts)
 length(tot_pts)
 ```
-#Done
+
 ```{r Pre-Rating}
 pr <- str_extract_all(text, ': *[0-9]+...-')
 pr <- unlist(pr)
@@ -58,7 +50,7 @@ pr <- toString(pr)
 pr <- str_extract_all(pr, ' [0-9]+')
 pr <- unlist(pr)
 pr <- as.integer(pr)
-pr
+head(pr)
 length(pr)
 ```
 
@@ -66,7 +58,7 @@ length(pr)
 num <- str_extract_all(text, '   .[0-9] ')
 num <- unlist(num)
 num <- as.integer(num)
-num
+head(num)
 length(num)
 ```
 
@@ -91,7 +83,7 @@ for (i in x)
   y[nrow(y)+1,] <- r
 }
 
-y
+head(y)
 
 ```
 
@@ -118,13 +110,13 @@ for (i in num)
    
 }
 avg <- data.frame(avg)
+head(avg)
 ```
 
-# dataf %>% add_column(new_col = NA)
 
 ```{r Info}
 info <- data.frame(Name = name, State = state, Total_Pts = tot_pts, Pre_Rt = pr, R1 = y$R1, R2 = y$R2, R3 = y$R3, R4 = y$R4, R5 = y$R5, R6 = y$R6, R7 = y$R7)
-info
+head(info)
 ```
 
 
@@ -135,6 +127,8 @@ colnames(player_info) <- c("Name", "State", "Total_Pts", "Pre-Rating", "Avg_Opp"
 
 player_info
 ```
+
+
 ```{r csv}
 
 write.csv(player_info,"Player_Info.csv", row.names = FALSE)
