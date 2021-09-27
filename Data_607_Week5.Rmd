@@ -1,0 +1,113 @@
+---
+title: "Data_607_week5"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Data Cleanup
+
+The original excel file was loaded into R and made into a data frame. A wide data set format was created to transform the data. All data regarding an age group will be contained in the same row.The data for each column was extracted from the data frame via direct element addresses and the grepl command. The columns were added in the order of the data set format to create the final data frame which was to be a csv file.
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(readxl)
+df <- data.frame(read_excel("israeli_vaccination_data_analysis_start.xlsx"))
+df
+colnames(df)
+```
+
+```{r Age}
+age <- df$Age[grepl("50", df$Age)]
+```
+
+```{r Population}
+pop_nv <- c(as.integer(df$Population..[2]), as.integer(df$Population..[4]))
+pop_fv <- c(as.integer(df$...3[2]), as.integer(df$...3[4]))
+
+pop_nv_percent <- c(as.double(df$Population..[3]), as.double(df$Population..[5]))
+pop_fv_percentage <- c(as.double(df$...3[3]), as.double(df$...3[5]))
+```
+
+```{r Severe Cases}
+nv_severe <- c(as.integer(df$Severe.Cases[2]), as.integer(df$Severe.Cases[4]))
+fv_severe <- c(as.integer(df$...5[2]), as.integer(df$...5[4]))
+```
+
+```{r Israel Vaccination}
+
+israel_vaccination <- data.frame(age, pop_nv, pop_nv_percent, pop_fv, pop_fv_percentage, nv_severe, fv_severe)
+israel_vaccination
+```
+
+```{r csv}
+write.csv(israel_vaccination, "Israel_Vaccination.csv")
+```
+
+
+#Israel Vaccination Background:
+
+  Israel's total population is estimated to be at 9.053 million.
+  
+  Anyone 12 years and older is eligible for the Covid-19 vaccine.
+  
+  The requirement to be considered fully vaccinated has changed from 2 doses to 3 for the Pfizer vaccine, as of August 29, 2021. Israel's department of Health announced that it would offer the third booster shot of the vaccine to individuals 12 years or older. Studies from Israel have shown that individuals with the third dose are more than tenfold less likely to get severe disease. 
+  
+  Currently the Moderna and Pfizer vaccines are being administered in Israel.
+  
+https://www.cnbc.com/2021/08/30/israel-doubles-down-on-covid-booster-shots-as-breakthrough-cases-rise.html
+
+
+
+#Analysis
+
+#(1) Do you have enough information to calculate the total population? What does this total population represent?
+
+```{r}
+l50 <- c(israel_vaccination$pop_nv[1]/israel_vaccination$pop_nv_percent[1], israel_vaccination$pop_fv[1]/israel_vaccination$pop_fv_percentage[1])
+g50 <- c(israel_vaccination$pop_nv[2]/israel_vaccination$pop_nv_percent[2], israel_vaccination$pop_fv[2]/israel_vaccination$pop_fv_percentage[2])
+
+l50
+g50
+
+abs(l50[2] - l50[1])
+abs(g50[2] - g50[1])
+
+#Total population range
+l50[2] + g50[2]
+l50[1] + g50[1]
+```
+
+We have enough information to calculate the total population based on the percentages provided. We can calculate the total population for both age groups by dividing the number of people by the respective percentage. The total population is between the range of 7156136 and 7148697.
+
+The total population would represent all individuals that are eligible to receive the Covid-19 vaccine (12 yrs and older).
+
+
+#(2) Calculate the Efficacy vs. Disease; Explain your results.	
+
+ 1 - (% fully vaxed severe cases per 100K / % not vaxed severe cases per 100K)
+ 
+```{r}
+l50_efficacy <- 1 - (0.00011/0.00043)
+
+g50_efficacy <- 1 - (0.00290/0.00171)
+
+l50_efficacy
+g50_efficacy
+```
+ The Efficacy vs. Disease is 74.4% for people 50 and younger, and -69.6% for people older than 50. The results seem to show the high effectiveness of the vaccine for people 50 and younger, but there is a waning effectiveness for people older than 50.
+
+
+#(3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?	
+
+The rate of severe cases in unvaccinated individuals is higher in the 50 and younger age group, but lower for the population over 50 years of age. We are not able to properly compare the rate of severe cases in the vaccinated and unvaccinated groups.
+
+#Discepencies
+
+While calculating the total population using the percentages, the results from each percentage were unequal for both populations. The following are the total population counts we get for both age groups when using the respective percentage
+
+50 and younger: Not Vaccinated: 1116834/0.233 = 4,793,278, Fully Vaccinated: 3501118/0.730 = 4,796,052 with a discrepancy of 2,774.
+Older than 50: Not Vaccinated: 186078/0.079 = 2,355,417, Fully Vaccinated:  2133516/0.904 = 2,360,084 with a discrepancy of 4,667.
