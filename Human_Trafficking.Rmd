@@ -89,7 +89,6 @@ Categorizing the forms of control allows us to better visualize the trends in us
 
 The "ht" data frame is used to create a new temporary data frame with the year of case registration and each specific means of control. It is then mutate to add a column for each of the above category which holds the sum of values for each mean of control in it. The data frame is grouped by each and the sum of each category is calculated for each year.
 
-The total of each category is plotted over the time frame on one graph.
 ```{r}
 moc_year <- ht %>% select(yearOfRegistration, starts_with("means") & !ends_with("Concatenated") & !ends_with("NotSpecified")& !ends_with("Other")) 
 c <- colnames(moc_year)
