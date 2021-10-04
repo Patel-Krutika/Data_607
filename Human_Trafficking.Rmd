@@ -52,7 +52,7 @@ knitr::kable(head(data.frame(Means_Of_Control_Total = colnames(moc),
 
 moc <- ht %>% filter(yearOfRegistration == 2018) %>% select(starts_with("means") & !ends_with("Concatenated") &
                        !ends_with("NotSpecified")) 
-knitr::kable(head(data.frame(Means_Of_Control_Total = colnames(moc), 
+knitr::kable(head(data.frame(Means_Of_Control_Total_2018 = colnames(moc), 
                              Count = colSums(moc, na.rm = TRUE))%>% arrange(desc(Count)),5))
 ```
 
@@ -111,12 +111,16 @@ moc_year <- moc_year %>% group_by(Year) %>% dplyr::summarise(  Money = sum(Money
                                                                False_Info = sum(False_Info, na.rm=TRUE))
 
 knitr::kable(moc_year)
+
+moc_year <- moc_year[2:7]
+
+plot.ts(moc_year, main = "Means_Of_Control", xlab="Years (2002-2019)")
 ```
 
 
 # 4. What age groups are exploited the most in some of the types of labor?
 
-For the purposes of this question we will focus on the top five specific type of labor
+For the purposes of this question we will focus on the top five specific type of labor.
 
 ```{r}
 labour <- data.frame(select(ht, starts_with("typeOfLabour") & !ends_with("Concatenated")
