@@ -120,11 +120,18 @@ moc_year <- moc_year %>% group_by(Year) %>% dplyr::summarise(  Money = sum(Money
 
 knitr::kable(moc_year)
 
-moc_year <- moc_year[2:7]
-
-plot.ts(moc_year, main = "Means_Of_Control", xlab="Years (2002-2019)")
+plot(moc_year$Year,moc_year$Money,type="l",col="red", ylim = c(0,800), main = "Labor Type", ylab = "Labor Type" )
+lines(moc_year$Year,moc_year$Abuse,col="green")
+lines(moc_year$Year,moc_year$Physical_Dependency,col="yellow")
+lines(moc_year$Year,moc_year$Labour,col="blue")
+lines(moc_year$Year,moc_year$Blackmail,col="pink")
+lines(moc_year$Year,moc_year$False_Info,col="violet")
+legend(x = "topleft",
+       legend = c("Money", "Abuse", "Physical_Dependency", "Labour", "Blackmail", "False_Info"),  # Legend texts
+       col = c("red","green","yellow", "blue", "pink", "purple"),
+       lwd = 2)
 ```
-
+Forms of control relating to physical dependency have the highest numbers, followed by false information.
 
 # 4. What age groups are exploited the most in some of the types of labor?
 
