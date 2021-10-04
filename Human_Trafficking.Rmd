@@ -1,0 +1,178 @@
+---
+title: "Human Trafficking"
+author: "Krutika Patel"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+# Infroduction
+
+In this report we will be transforming and analyzing a data set on global human trafficking cases from 2002 to 2019, found at https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/globaldataset_20200414.csv (courtesy: Alan Noel, "https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/globaldataset_20200414.csv"). The data set contains 63 variables with information on the manner of control, exploitation and labor, and country in each case. The data will be manipulated to answer the following questions:
+    1. What means of control is most used now?
+    2. Which means of control is most used with females versus males?
+    3. Is there a trend in which means of control is most prevalent over the years?
+    4. What age groups are exploited the most in some of the types of labor?
+
+```{r, results='hide', message=FALSE}
+library(dplyr)
+library(plyr)
+library(tidyr)
+library(tidyverse)
+library(ggplot2)
+library(reshape2)
+```
+
+A majority of the columns are of type integer using 1 and 0 to indicate TRUE and FALSE values respectively, and -99 to represent NA. As the data set is being read, all of the -99 value have been changed to NA for easier analysis.
+
+```{r}
+
+df <- data.frame(read.csv("https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/globaldataset_20200414.csv", header=T, na.strings=c("-99","NA")))
+dim(df)
+```
+
+For the purposes of this report we will only be looking at the manner of trafficking with regards to years and gender. The necessary columns have been selected from the original data frame to create a compact new data frame.
+```{r}
+ht <- df %>% select( 2,4,5, starts_with("means"), starts_with("is"), starts_with("type"),
+             starts_with("recruiter"), starts_with("Country"))
+```
+
+
+# 1. What means of control is most used now?
+
+To see the means of control most used, a temporary data frame is created with the year column and all columns associated with a specific type of control. Over all Psychological Abuse has been the most used form of control, as well as the most used in 2018. The top five forms of control are show for all years combined and year 2018. The means of control for all cases registered in 2019 are no specified, hence the focus is on year 2018.
+
+```{r}
+moc <- ht %>% select(starts_with("means") & !ends_with("Concatenated") &
+                       !ends_with("NotSpecified"))
+knitr::kable(head(data.frame(Means_Of_Control_Total = colnames(moc), 
+                             Count = colSums(moc, na.rm = TRUE))%>% arrange(desc(Count)),5))
+
+moc <- ht %>% filter(yearOfRegistration == 2018) %>% select(starts_with("means") & !ends_with("Concatenated") &
+                       !ends_with("NotSpecified")) 
+knitr::kable(head(data.frame(Means_Of_Control_Total = colnames(moc), 
+                             Count = colSums(moc, na.rm = TRUE))%>% arrange(desc(Count)),5))
+```
+
+# 2. Which means of control is most used with females versus males?
+
+Two separate data frames are created for with the gender filtered to included only female and male cases over all years respectively and all columns associated with a specific form of control. For females "Psychological Abuse" for the most used form of control, while the most used for males was "False Promises". The top five form of control are shown for each group.
+```{r}
+female <- data.frame(ht %>% filter(gender=="Female") %>% select(starts_with("means")
+                          & !ends_with("Concatenated") & !ends_with("NotSpecified")))
+knitr::kable(head(data.frame(Means_Of_Control_Female = colnames(female), 
+                             Count = colSums(female, na.rm = TRUE)) %>% arrange(desc(Count)),5))
+```
+
+```{r}
+male <- data.frame(ht %>% filter(gender=="Male" ) %>% select(starts_with("means") 
+                          & !ends_with("Concatenated") & !ends_with("NotSpecified")))
+knitr::kable(head(data.frame(Means_Of_Control_Male = colnames(male), 
+                             Count = colSums(male, na.rm = TRUE)) %>% arrange(desc(Count)),5))
+```
+
+
+# 3.  Is there a trend in which means of control is most prevalent over the years?
+
+In order to see the trend in the means of control over the years, all specific means are categorized into one of six categories:
+
+  Money: Debt Bondage, Restricts Financial Access, Takes Earnings
+  Abuse: Physical Abuse, Psychological Abuse, Sexual Abuse
+  Physical Dependency: Psychoactive Substances, Restricts Movement, Restricts Medical Care
+  Labor: Excessive Working Hours
+  Blackmail: Threats, Uses Children, Threat of Law Enforcement, Withholds Documents, Withholds Necessities
+  False Info: False Promises
+
+Categorizing the forms of control allows us to better visualize the trends in use of control than if we were to look at each form of control separately.
+
+The "ht" data frame is used to create a new temporary data frame with the year of case registration and each specific means of control. It is then mutate to add a column for each of the above category which holds the sum of values for each mean of control in it. The data frame is grouped by each and the sum of each category is calculated for each year.
+
+The total of each category is plotted over the time frame on one graph.
+```{r}
+moc_year <- ht %>% select(yearOfRegistration, starts_with("means") & !ends_with("Concatenated") & !ends_with("NotSpecified")& !ends_with("Other")) 
+c <- colnames(moc_year)
+c <- gsub('^.{14}', '', c)
+c[1] <- "Year"
+colnames(moc_year) <- c
+
+moc_year <- moc_year %>% mutate(Money = DebtBondage + RestrictsFinancialAccess + TakesEarnings,
+                                Abuse = PhysicalAbuse + PsychologicalAbuse + SexualAbuse,
+                                Physical_Dependency = PsychoactiveSubstances, RestrictsMovement + RestrictsMedicalCare, 
+                                Labour = ExcessiveWorkingHours,
+                                Blackmail = Threats + UsesChildren + ThreatOfLawEnforcement + WithholdsDocuments + WithholdsNecessities,
+                                False_Info = FalsePromises )
+
+moc_year <- moc_year %>% group_by(Year) %>% dplyr::summarise(  Money = sum(Money, na.rm=TRUE),
+                                                               Abuse = sum(Abuse, na.rm=TRUE),
+                                                               Physical_Dependency = sum(Physical_Dependency, na.rm=TRUE),
+                                                               Labour = sum(Labour, na.rm=TRUE),
+                                                               Blackmail = sum(Blackmail, na.rm=TRUE),
+                                                               False_Info = sum(False_Info, na.rm=TRUE))
+
+knitr::kable(moc_year)
+```
+
+
+# 4. What age groups are exploited the most in some of the types of labor?
+
+For the purposes of this question we will focus on the top five specific type of labor
+
+```{r}
+labour <- data.frame(select(ht, starts_with("typeOfLabour") & !ends_with("Concatenated")
+                            & !ends_with("Other") & !ends_with("NotSpecified")))
+knitr::kable(slice(data.frame(type = colnames(labour), 
+                              count = colSums(labour, na.rm = TRUE)) %>% arrange(desc(count)), 1:5))
+```
+Top 5 types of Labor:
+  Domestic Work
+  Construction
+  Manufacturing
+  Agriculture
+  Begging
+
+To see the age groups most affected by the five types of labor, a temporary data frame will be created for each labor by selecting the age group column and the respective labor column. In order to account for NA values, the data frame has been filtered to not contain any rows with NAs in the age group column. The data is then grouped by age and arranged in descending order. A final data frame is created to contain the top age group for each type of labor. 
+
+```{r}
+#Domestic Work
+dw <- ht %>% select(typeOfLabourDomesticWork, ageBroad) %>% 
+  filter(typeOfLabourDomesticWork == 1 & !is.na(ageBroad)) %>% group_by(ageBroad) %>% 
+  dplyr::summarise(Total = n(),) %>% arrange(desc(Total))
+```
+
+```{r}
+#Construction
+c <- ht %>% select(typeOfLabourConstruction, ageBroad) %>% 
+  filter(typeOfLabourConstruction == 1 & !is.na(ageBroad)) %>% group_by(ageBroad) %>% 
+  dplyr::summarise(Total = n(),) %>% arrange(desc(Total))
+```
+
+```{r}
+#Manufacturing
+m <- ht %>% select(typeOfLabourManufacturing, ageBroad) %>% 
+  filter(typeOfLabourManufacturing == 1 & !is.na(ageBroad)) %>% group_by(ageBroad) %>% 
+  dplyr::summarise(Total = n(),) %>% arrange(desc(Total))
+```
+
+```{r}
+#Agriculture
+a <- ht %>% select(typeOfLabourAgriculture, ageBroad) %>% 
+  filter(typeOfLabourAgriculture == 1 & !is.na(ageBroad)) %>% group_by(ageBroad) %>% 
+  dplyr::summarise(Total = n(),) %>% arrange(desc(Total))
+```
+
+```{r}
+#Begging
+b <- ht %>% select(typeOfLabourBegging, ageBroad) %>%
+  filter(typeOfLabourBegging == 1 & !is.na(ageBroad)) %>% group_by(ageBroad) %>% 
+  dplyr::summarise(Total = n(),) %>% arrange(desc(Total))
+```
+
+```{r}
+labour_type_age_broad <- data.frame(
+  Labour_Type = c("Domestic Work", "Contruction", "Manufacturing", "Agriculture", "Begging"))
+labour_type <- data.frame(head(dw,1))
+labour_type <- bind_rows(labour_type, head(c,1), head(m,1), head(a,1), head(b,1))
+knitr::kable(bind_cols(labour_type_age_broad, labour_type))
+```
