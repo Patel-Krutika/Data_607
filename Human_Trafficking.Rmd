@@ -12,9 +12,13 @@ output:
 
 Peter Phung, Coffy Andrews-Guo, Chinedu Onyeka, Krutika Patel
 
+# Data
+Alan Noel, https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/globaldataset_20200414.csv
+
 # Infroduction
 
-In this report we will be transforming and analyzing a data set on global human trafficking cases from 2002 to 2019, found at https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/globaldataset_20200414.csv (courtesy: Alan Noel, "https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/globaldataset_20200414.csv"). The data set contains 63 variables with information on the manner of control, exploitation and labor, and country in each case. The data will be manipulated to answer the following questions:
+In this report we will be transforming and analyzing a data set on global human trafficking cases from 2002 to 2019, found at https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/globaldataset_20200414.csv.The data set contains 63 variables with information on the manner of control, exploitation and labor, and country in each case. The data will be manipulated to answer the following questions:
+
     1. What means of control is most used now?
     2. Which means of control is most used with females versus males?
     3. Is there a trend in which means of control is most prevalent over the years?
@@ -46,7 +50,7 @@ ht <- df %>% select( 2,4,5, starts_with("means"), starts_with("is"), starts_with
 
 # 1. What means of control is most used now?
 
-To see the means of control most used, a temporary data frame is created with the year column and all columns associated with a specific type of control. Over all Psychological Abuse has been the most used form of control, as well as the most used in 2018. The top five forms of control are show for all years combined and year 2018. The means of control for all cases registered in 2019 are no specified, hence the focus is on year 2018.
+To see the means of control most used, a temporary data frame is created with the year column and all columns associated with a specific type of control. Over all Psychological Abuse has been the most used form of control, as well as the most used in 2018. The top five forms of control are show for all years combined and year 2018. The means of control for all cases registered in 2019 are not specified, hence the focus is on year 2018.
 
 ```{r}
 moc <- ht %>% select(starts_with("means") & !ends_with("Concatenated") &
@@ -82,12 +86,12 @@ knitr::kable(head(data.frame(Means_Of_Control_Male = colnames(male),
 
 In order to see the trend in the means of control over the years, all specific means are categorized into one of six categories:
 
-  Money: Debt Bondage, Restricts Financial Access, Takes Earnings
-  Abuse: Physical Abuse, Psychological Abuse, Sexual Abuse
-  Physical Dependency: Psychoactive Substances, Restricts Movement, Restricts Medical Care
-  Labor: Excessive Working Hours
-  Blackmail: Threats, Uses Children, Threat of Law Enforcement, Withholds Documents, Withholds Necessities
-  False Info: False Promises
+    Money: Debt Bondage, Restricts Financial Access, Takes Earnings
+    Abuse: Physical Abuse, Psychological Abuse, Sexual Abuse
+    Physical Dependency: Psychoactive Substances, Restricts Movement, Restricts Medical Care
+    Labor: Excessive Working Hours
+    Blackmail: Threats, Uses Children, Threat of Law Enforcement, Withholds Documents, Withholds Necessities
+    False Info: False Promises
 
 Categorizing the forms of control allows us to better visualize the trends in use of control than if we were to look at each form of control separately.
 
@@ -132,12 +136,6 @@ labour <- data.frame(select(ht, starts_with("typeOfLabour") & !ends_with("Concat
 knitr::kable(slice(data.frame(type = colnames(labour), 
                               count = colSums(labour, na.rm = TRUE)) %>% arrange(desc(count)), 1:5))
 ```
-Top 5 types of Labor:
-  Domestic Work
-  Construction
-  Manufacturing
-  Agriculture
-  Begging
 
 To see the age groups most affected by the five types of labor, a temporary data frame will be created for each labor by selecting the age group column and the respective labor column. In order to account for NA values, the data frame has been filtered to not contain any rows with NAs in the age group column. The data is then grouped by age and arranged in descending order. A final data frame is created to contain the top age group for each type of labor. 
 
