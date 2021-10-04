@@ -8,6 +8,10 @@ output:
     highlight: github
 ---
 
+# Project 2 Team Members
+
+Peter Phung, Coffy Andrews-Guo, Chinedu Onyeka, Krutika Patel
+
 # Infroduction
 
 In this report we will be transforming and analyzing a data set on global human trafficking cases from 2002 to 2019, found at https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/globaldataset_20200414.csv (courtesy: Alan Noel, "https://raw.githubusercontent.com/alnoel/CUNYSPS-Data607/main/globaldataset_20200414.csv"). The data set contains 63 variables with information on the manner of control, exploitation and labor, and country in each case. The data will be manipulated to answer the following questions:
