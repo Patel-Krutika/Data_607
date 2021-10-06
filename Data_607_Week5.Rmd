@@ -7,11 +7,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+#Data: https://github.com/acatlin/data/blob/master/israeli_vaccination_data_analysis.xlsx, https://www.covid-datascience.com/post/israeli-data-how-can-efficacy-vs-severe-disease-be-strong-when-60-of-hospitalized-are-vaccinated
+  
+
 #Data Cleanup
 
-The original excel file was loaded into R and made into a data frame. A wide data set format was created to transform the data. All data regarding an age group will be contained in the same row.The data for each column was extracted from the data frame via direct element addresses and the grepl command. The columns were added in the order of the data set format to create the final data frame which was to be a csv file.
+The original excel file was loaded into R and made into a data frame. A wide data set format was created to transform the data. All data regarding an age group will be contained in the same row.The data for each column was extracted from the data frame via direct element addresses and the grepl command. The columns were added in the order of the data set format and an "Efficacy" column was created to contain the Efficacy v. Disease calculations. The final csv file can be found at: 
 
-```{r}
+
+## August
+
+```{r, message=FALSE}
 library(tidyverse)
 library(dplyr)
 library(readxl)
@@ -28,25 +34,34 @@ age <- df$Age[grepl("50", df$Age)]
 pop_nv <- c(as.integer(df$Population..[2]), as.integer(df$Population..[4]))
 pop_fv <- c(as.integer(df$...3[2]), as.integer(df$...3[4]))
 
-pop_nv_percent <- c(as.double(df$Population..[3]), as.double(df$Population..[5]))
-pop_fv_percentage <- c(as.double(df$...3[3]), as.double(df$...3[5]))
+pop_nv_p <- c(as.double(df$Population..[3])*100, as.double(df$Population..[5])*100)
+pop_fv_p <- c(as.double(df$...3[3])*100, as.double(df$...3[5])*100)
 ```
 
 ```{r Severe Cases}
-nv_severe <- c(as.integer(df$Severe.Cases[2]), as.integer(df$Severe.Cases[4]))
-fv_severe <- c(as.integer(df$...5[2]), as.integer(df$...5[4]))
+nv_s <- c(as.integer(df$Severe.Cases[2]), as.integer(df$Severe.Cases[4]))
+fv_s <- c(as.integer(df$...5[2]), as.integer(df$...5[4]))
 ```
 
 ```{r Israel Vaccination}
+library(dplyr)
+iv <- data.frame(age, pop_nv, pop_nv_p, pop_fv, pop_fv_p, nv_s, fv_s)
 
-israel_vaccination <- data.frame(age, pop_nv, pop_nv_percent, pop_fv, pop_fv_percentage, nv_severe, fv_severe)
-israel_vaccination
+iv[nrow(iv)+1,] <- c("Total",sum(iv$pop_nv),18.2,sum(iv$pop_fv),78.7,
+                                                     sum(iv$nv_s),sum(iv$fv_s))
+iv[2:7] <- lapply(iv[2:7], function(x) as.numeric(as.character(x)))
+iv
 ```
+
+```{r}
+iv <- iv %>% mutate(nv_s_p = nv_s*100000/pop_nv, fv_s_p = fv_s*100000/pop_fv, Efficacy = (1-(fv_s_p/nv_s_p))*100)
+iv
+```
+
 
 ```{r csv}
-write.csv(israel_vaccination, "Israel_Vaccination.csv")
+write.csv(iv, "Israel_Vaccination.csv")
 ```
-
 
 #Israel Vaccination Background:
 
@@ -67,21 +82,11 @@ https://www.cnbc.com/2021/08/30/israel-doubles-down-on-covid-booster-shots-as-br
 #(1) Do you have enough information to calculate the total population? What does this total population represent?
 
 ```{r}
-l50 <- c(israel_vaccination$pop_nv[1]/israel_vaccination$pop_nv_percent[1], israel_vaccination$pop_fv[1]/israel_vaccination$pop_fv_percentage[1])
-g50 <- c(israel_vaccination$pop_nv[2]/israel_vaccination$pop_nv_percent[2], israel_vaccination$pop_fv[2]/israel_vaccination$pop_fv_percentage[2])
-
-l50
-g50
-
-abs(l50[2] - l50[1])
-abs(g50[2] - g50[1])
-
-#Total population range
-l50[2] + g50[2]
-l50[1] + g50[1]
+iv %>% select(age, pop_nv, pop_fv)
 ```
 
-We have enough information to calculate the total population based on the percentages provided. We can calculate the total population for both age groups by dividing the number of people by the respective percentage. The total population is between the range of 7156136 and 7148697.
+We have enough information to calculate the total population. The total has been calculated for both the unvaccinated and vaccinated population by simply adding the numbers from each group. The total for unvacinated individuals is 1,302,912 and the total for vaccinated individuals is 563,634.
+
 
 The total population would represent all individuals that are eligible to receive the Covid-19 vaccine (12 yrs and older).
 
@@ -89,25 +94,22 @@ The total population would represent all individuals that are eligible to receiv
 #(2) Calculate the Efficacy vs. Disease; Explain your results.	
 
  1 - (% fully vaxed severe cases per 100K / % not vaxed severe cases per 100K)
- 
+  
 ```{r}
-l50_efficacy <- 1 - (0.00011/0.00043)
-
-g50_efficacy <- 1 - (0.00290/0.00171)
-
-l50_efficacy
-g50_efficacy
+iv %>% select(age, Efficacy)
 ```
- The Efficacy vs. Disease is 74.4% for people 50 and younger, and -69.6% for people older than 50. The results seem to show the high effectiveness of the vaccine for people 50 and younger, but there is a waning effectiveness for people older than 50.
+ 
 
 
 #(3) From your calculation of efficacy vs. disease, are you able to compare the rate of severe cases in unvaccinated individuals to that in vaccinated individuals?	
+```{r}
+iv %>% select(age, nv_s, nv_s_p, fv_s, fv_s_p, Efficacy) 
+rate_unvax <- iv$nv_s_p[2]/iv$nv_s_p[1]
+rate_vax <- iv$fv_s_p[2]/iv$fv_s_p[1]
 
-The rate of severe cases in unvaccinated individuals is higher in the 50 and younger age group, but lower for the population over 50 years of age. We are not able to properly compare the rate of severe cases in the vaccinated and unvaccinated groups.
+data.frame(rate_unvax, rate_vax)
+```
 
-#Discepencies
+The efficacy of the vaccines in both groups (50 or younger, older than 50) is high (80%+). The rate of severe cases among unvaccinated individuals is higher than the rate of severe cases among vaccinated individuals. The rates of severe cases are higher for both vaccinated and unvaccinated older individuals. The efficacy calculations show that the efficacy of the vaccine is slightly lower for older individuals. 
 
-While calculating the total population using the percentages, the results from each percentage were unequal for both populations. The following are the total population counts we get for both age groups when using the respective percentage
 
-50 and younger: Not Vaccinated: 1116834/0.233 = 4,793,278, Fully Vaccinated: 3501118/0.730 = 4,796,052 with a discrepancy of 2,774.
-Older than 50: Not Vaccinated: 186078/0.079 = 2,355,417, Fully Vaccinated:  2133516/0.904 = 2,360,084 with a discrepancy of 4,667.
