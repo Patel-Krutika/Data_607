@@ -1,0 +1,21 @@
+<books_list>
+   <book>
+		<name>The Great Gatsby</name>
+		<author>F. Scott Fitzgerald</author>
+		<year>1925</year>
+		<genre>Fiction</genre>
+		<tag>Novel</tag> </book>
+   <book>
+		<name>Little Women</name>
+		<author>Louisa May Alcott</author>
+		<year>1868</year>
+		<genre>Fiction</genre>
+		<tag>Domestic Fiction</tag> </book>
+   <book>
+		<name>1984</name>
+		<author>George Orwell</author>
+		<year>1949</year>
+		<genre>Fiction</genre>
+		<tag>Science Fiction</tag> </book>
+
+</books_list>
