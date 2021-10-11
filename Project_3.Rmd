@@ -1,0 +1,70 @@
+---
+title: "Project_3"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(RMySQL)
+library(tidyr)
+library(tidyverse)
+library(dplyr)
+library(readr)
+```
+
+
+```{r csv}
+
+csv <- data.frame(read.csv("https://raw.githubusercontent.com/Patel-Krutika/Data_607/main/Acct_Curricula2.csv"))
+col <- colnames(csv) 
+col[1] <- "School"
+colnames(csv) <- col
+csv <- csv %>% group_by(School, City, State, ZipCode, Total.Tuition.In.State, Tuition.per.Credit.In.State, In.state.fees, Total.Tuition.Out.of.State, Tuition.per.Credit.Out.of.State, Out.of.state.fees) %>% mutate(School_ID=cur_group_id())
+
+csv <- csv %>% group_by(School_ID, Degree.Program.Name, Modality, Program.Degree.Credits, Programmic.Accrediation) %>% mutate(Program_ID=cur_group_id())
+
+```
+
+```{r School}
+school <- csv %>% select(School_ID, School, City, State, ZipCode, Total.Tuition.In.State, Tuition.per.Credit.In.State, In.state.fees, Total.Tuition.Out.of.State, Tuition.per.Credit.Out.of.State, Out.of.state.fees)
+
+school <- subset(school, select = -c(Modality, Degree.Program.Name, Program.Degree.Credits, Programmic.Accrediation) )
+
+colnames(school) <- c("School_ID", "School", "City", "State", "ZipCode", "Total_Tuition_In_State", "Tuition_per_Credit_In_State", "In_state_fees", "Total_Tuition_Out_of_State", "Tuition_per_Credit_Out_of_State", "Out_of_state_fees")
+
+school <- data.frame(unique(school))
+```
+
+```{r Program}
+program <- csv %>% select(Program_ID, School_ID, Name = Degree.Program.Name, Modality, Credits = Program.Degree.Credits, Program_Accrediation = Programmic.Accrediation)
+
+program <- data.frame(unique(program))
+
+```
+
+```{r Course}
+course <- csv %>% select(Course_Num = Grad.Course.Number, Program_ID, Name = Name.of.Course, Description, Credits = Course.Credits, Core_Or_Elective = Core.or.Elective)
+
+course <- subset(course, select = -c(Modality, School_ID, Degree.Program.Name, Program.Degree.Credits, Programmic.Accrediation) )
+
+course <- data.frame(unique(course))
+
+```
+
+
+```{r sql_server}
+#connection <- dbConnect(MySQL(), user = 'user', password = 'password', host = 'localhost', dbname = 'data_science')
+#dbSendQuery(connection, "SET GLOBAL local_infile = true;")
+
+#rs <- dbSendQuery(connection, 'set character set "utf8"')
+#rs <- dbSendQuery(connection, 'SET NAMES utf8')
+
+#dbWriteTable(connection, "school", school, overwrite = TRUE)
+#dbWriteTable(connection, "program", program, overwrite = TRUE)
+#dbWriteTable(connection, "course", course, overwrite = TRUE)
+
+```
+
