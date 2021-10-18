@@ -1,0 +1,75 @@
+---
+title: "Nobel Prizes and Laureates"
+author: "Krutika Patel"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=FALSE}
+library(httr)
+library(jsonlite)
+library(dplyr)
+```
+
+```{r Get Data}
+prize  <- fromJSON("https://api.nobelprize.org/2.1/nobelPrizes")
+laureates <- fromJSON("https://api.nobelprize.org/2.1/laureates")
+```
+
+
+```{r Prize}
+prize <- prize$nobelPrizes
+nobel <- data.frame(prize$awardYear, prize$category[1], prize$prizeAmount, prize$prizeAmountAdjusted, prize$dateAwarded)
+colnames(nobel) <- c("Award_Year", "Category", "Prize_Amt", "Prize_Amt_Adj", "Date_Awarded")
+```
+
+```{r}
+laureates <- laureates$laureates
+```
+
+
+# How many laureates are alive?
+```{r}
+d <- data.frame(bind_rows(laureates$death)) %>% select(date)
+colSums(is.na(d))
+```
+** Of all the Nobel Prize Laureates given by the API call, 12 are alive.**
+
+# What is the ratio of Female to Male Laureates?
+```{r}
+laureates%>%
+  count(gender) %>%
+  mutate(p = n /sum(n))
+```
+
+**The ratio of female to male Nobel Prize Laureates is 24:1**
+
+
+**Information of the female Laureate(s)**
+
+```{r}
+l <- laureates%>% filter(gender == "female")
+name <- l$fullName$en
+l <- bind_rows(l$nobelPrizes)
+date <- l$dateAwarded
+category <- l$category$en
+Motivation <- l$motivation$en
+female_info <- data.frame(Name = name, Date_Awarded = date, category <- category, Motivation)
+female_info
+```
+
+
+#How many laureates are affiliated with a university for each country?
+```{r}
+
+x <- bind_rows(laureates$nobelPrizes)
+x <- bind_rows(x$affiliations)
+x <- x$countryNow %>%
+  count(en)
+colnames(x) <- c("Country", "Laureates")
+```
+
+
