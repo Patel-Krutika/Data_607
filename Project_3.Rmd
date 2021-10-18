@@ -4,6 +4,10 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+# Members
+  **Coffy Andrews-Guo,  Joseph Foy,  Krutika Patel,  Peter Phung**
+  
+  
 Please refer to the project write-up document for further information.
 
 ```{r setup, include=FALSE}
