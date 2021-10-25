@@ -1,0 +1,89 @@
+---
+title: "New_York_Times"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# NYT Archive API
+
+Using the New York Times Archive API, we will be analyzing the articles from November of 2020, the election month for the 2020 election, in order to gauge its weight in the new industry.
+
+```{r, message=FALSE}
+library(jsonlite)
+library(tidyverse)
+library(wordcloud)
+```
+
+```{r, include=FALSE}
+key = "O0n35AS6kl66lBmqBAvcTEa7GSoIhHqW"
+```
+
+```{r}
+url = "https://api.nytimes.com/svc/archive/v1/2020/11.json?api-key="
+data <- as.data.frame(fromJSON(paste(url,key,sep = "")))
+```
+
+
+```{r, }
+d <- data %>% select(Abstract = response.docs.abstract, Snippet = response.docs.snippet, Lead_Paragraph = response.docs.lead_paragraph, response.docs.type_of_material, Section = response.docs.section_name, Subsection = response.docs.subsection_name, Doc_Type = response.docs.document_type)
+d["Headline"] <- data$response.docs.headline$main
+n <- nrow(d)
+```
+
+# What are the top 5 sections, and subsections
+```{r}
+data.frame(table(d$Section)) %>% mutate(Proportion = Freq/n)  %>% arrange(desc(Proportion)) %>% head(5)
+data.frame(table(d$Subsection)) %>% mutate(Proportion = Freq/n)  %>% arrange(desc(Proportion)) %>% head(5)
+```
+The top five sections are: U.S., World, Opinion, Business Day, and Arts.
+The top five sub sections are: Elections, Politics, Europe, Book Review, and Television.
+Of all the New York Times articles 34.8% were related to the U.S.
+
+# Election
+
+As we are interested in the 2020 election, the data will be filtered to contain rows that have any of the top three (U.S., World, Opinion) as the section.
+
+```{r}
+election <- d %>% filter(Section == "U.S." | Section == "World" | Section == "Opinion")
+election
+```
+
+```{r}
+
+Headlines <- function(x){
+
+  counts <- data.frame(table(unlist(strsplit(tolower(election$Headline), " ")))) %>% arrange(desc(Freq))
+  x <- counts[which(counts$Var1 == x),]
+  return(x)
+
+}
+```
+
+
+
+```{r}
+
+words <- c("biden", "trump",  "harris", "election", "2020", "vote", "president", "vice", "coronavirus", "covid-19", "american", "democrat", "republican", "swing", "state", "votes", "results", "fraud", "battleground", "progressive", "ballot" )
+
+results <- c()
+counter <- 1
+for(word in words)
+{
+  results[[counter]] <- Headlines(word)
+  counter <- counter +1
+}
+results <- as.data.frame(bind_rows(results))
+results <- cbind(as.data.frame(words), bind_cols(words, results))
+results <- results[-2]
+results <- results[-2]
+colnames(results) <- c("Word", "Count")
+```
+```{r}
+wordcloud(words = results$Word, freq = results$Count,  max.words=200, random.order=FALSE, rot.per=0.35,            colors=brewer.pal(8, "Dark2"))
+```
+
+
+
