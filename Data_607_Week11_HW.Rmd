@@ -1,0 +1,64 @@
+---
+title: "Ebay Recommendation System"
+author: "Krutika Patel"
+date: "11/6/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Your task is to analyze an existing recommender system that you find interesting.  You should:
+
+
+# 1.	Perform a Scenario Design analysis as described below.  Consider whether it makes sense for your selected recommender system to perform scenario design twice, once for the organization (e.g. Amazon.com) and once for the organization's customers.
+
+    1. Who are the target users?
+      
+      The target users for Ebay's recommendation system would be the customers that purchase from their sellers.
+  
+    2. What are their key goals?
+  
+      The key goal of the buyer would be to purchase a product with their desired features at the most financially practical price.
+  
+    3. How can you help them accomplish those goals?
+
+      The ideal recommendation system would provide the user with other items relevent to their search. In terms of browsing, the UX design should make it easy to find items and filter the search.
+      
+# 2.	Attempt to reverse engineer what you can about the site, from the site interface and any available information that you can find on the Internet or elsewhere.
+
+    The main challenges Ebay faces in regards to their recommendation system is the large scale implementation and item volataility. Items are often only on the platform for a short amount of time, making in harder to recommend similar items. As a response to these challenges, Ebay uses the complementory items algorithm for its recommendation purposes. The algorithm is split into two levels: Related Categories and Recall Sets.
+    
+    Each item is assigned to a category, and the algorithm aggregates user purchases from all categories. A user-cateogry matrix is created, with columns representing each category and entries of 0 and 1 representing whether the user has bought from this category. Cosine similarity is used to find the top-K related categories to the input search/seed. Whether or not the original input is added as a related category is determined by the mean of purchases/user for each category. If the value passes a threshold, the category is added.
+    
+    The second part of the algorithm is Recall Sets. Recall Sets are sets of candidate items for recommendation. The information about the input seed is used to generate theses sets. The following are the ways the algorithm creates Recall Sets:
+      
+      Related Products: This set uses the filtering used at the category level at the product level. If we can map the seed item to a product, cosine similarity of vectors of product-level purchase data. This leads to a tradeoff between coverage (percent of input seed items for which recommendation results are produced) and quality.
+
+      Co-views: This recall set uses behavioral signals. An item purchase is viewed as the ultimate sign of user intention. Although a signal view carries less intention, the benifit in using it is the increase in the volume of recommendations. These sets are high quality in terms of conversion.
+      
+      Related Queries: Another behavioral signal is co-searches. This recall set is contextualized to a search session ans uses the user's search queries into the recommendation. A cache is created to store related queries that uses the user's searches. Another cache is used to map the queries to popular items regarding the related queries. 
+      
+      Compatability: This recall set uses content based signals to generate recommendtions. Some items have compatability/fitment data associated with them, and this can be used to recommend items with a "compatabile model" attribute that matches the item's "model" attribute. There is also a filter in place so that other sets can benifit from the compatability enforcement. 
+      
+      
+      Complementary of Similar: A "complementary of similar product" algorithm is created to tackle the problem of one product having complemtory recommendations and a nearly identical product not having any. Product embeddings are generated using textual information from the title and aspect and using eBay's GPU clusters to find simiarl profucts with the KNN search on the product's embeddings. This recall set will return complementory items from similar products.
+      
+      DeepRecs: DeepRecs focuses on item embeddings directly. This set uses a text-based deep learning model on the title, aspects and category from the seed and the recommendation candidate items. It is trained with the implicit co-purchase signal as the target. A co-purchase probability is calcuated between the seed and candidate items and the top-K results are returned. 
+      
+      Popular: This goes back to the popluar items in each cateogry as a result of a lack in behavioral and context based signals. The low relevance, causes this set not to be used in all versions of the algorithm. It is used as the baseline when creating new recall sets.
+    
+    Engineering Architecture
+      
+      Most of the aggregation/ofline computation using historical data is done in a Hadoop cluster using Twitter's Scalding libaray or Spant. a GPU cluster is used to train deep learing models and perform KNN search of embeddings. All preprocessing is stored in a Couchbase DB cache for runtime access.
+      
+
+# 3.	Include specific recommendations about how to improve the site's recommendation capabilities going forward. 
+
+    One recommendation I have is regarding user filters. Allowing users to preset some filters they would like to be applied to all their searchs would produce more relevant recommendations. An example of this would be allowing the user to set free shipping as a filter and all recommended items would have free shipping. 
+    
+    
+# References
+
+https://tech.ebayinc.com/engineering/complementary-item-recommendations-at-ebay-scale/ 
